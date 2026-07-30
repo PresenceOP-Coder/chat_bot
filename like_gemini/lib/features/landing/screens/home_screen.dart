@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../widgets/interactive_background.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -6,8 +7,15 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const Scaffold(
-      body: Center(
-        child: Text('Nova AI Landing Page'),
+      body: Stack(
+        children: [
+          Positioned.fill(
+            child: InteractiveBackground(),
+          ),
+          Center(
+            child: Text('Nova AI Landing Page'),
+          ),
+        ],
       ),
     );
   }
