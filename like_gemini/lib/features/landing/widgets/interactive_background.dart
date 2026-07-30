@@ -6,11 +6,13 @@ class Particle {
   Offset position;
   Offset velocity;
   double radius;
+  Color color;
 
   Particle({
     required this.position,
     required this.velocity,
     required this.radius,
+    required this.color,
   });
 }
 
@@ -46,6 +48,11 @@ class _InteractiveBackgroundState extends State<InteractiveBackground>
 
   void _initParticles(Size size) {
     if (_particles.isNotEmpty) return;
+    final colors = [
+      AppTheme.cyanAccent,
+      AppTheme.purpleAccent,
+      Colors.white,
+    ];
     for (int i = 0; i < _particleCount; i++) {
       _particles.add(
         Particle(
@@ -57,7 +64,8 @@ class _InteractiveBackgroundState extends State<InteractiveBackground>
             (_random.nextDouble() - 0.5) * 1.0,
             (_random.nextDouble() - 0.5) * 1.0,
           ),
-          radius: _random.nextDouble() * 2 + 1.2,
+          radius: _random.nextDouble() * 2 + 1.5,
+          color: colors[_random.nextInt(colors.length)],
         ),
       );
     }
@@ -70,29 +78,41 @@ class _InteractiveBackgroundState extends State<InteractiveBackground>
         final size = Size(constraints.maxWidth, constraints.maxHeight);
         _initParticles(size);
 
-        return MouseRegion(
-          onHover: (event) {
-            setState(() {
-              _mousePosition = event.localPosition;
-            });
-          },
-          onExit: (event) {
-            setState(() {
-              _mousePosition = null;
-            });
-          },
-          child: AnimatedBuilder(
-            animation: _controller,
-            builder: (context, child) {
-              return CustomPaint(
-                size: Size.infinite,
-                painter: ParticlePainter(
-                  particles: _particles,
-                  mousePosition: _mousePosition,
-                  random: _random,
-                ),
-              );
+        return Container(
+          decoration: const BoxDecoration(
+            gradient: RadialGradient(
+              center: Alignment(-0.5, -0.5),
+              radius: 1.4,
+              colors: [
+                Color(0xFF141328),
+                AppTheme.backgroundColor,
+              ],
+            ),
+          ),
+          child: MouseRegion(
+            onHover: (event) {
+              setState(() {
+                _mousePosition = event.localPosition;
+              });
             },
+            onExit: (event) {
+              setState(() {
+                _mousePosition = null;
+              });
+            },
+            child: AnimatedBuilder(
+              animation: _controller,
+              builder: (context, child) {
+                return CustomPaint(
+                  size: Size.infinite,
+                  painter: ParticlePainter(
+                    particles: _particles,
+                    mousePosition: _mousePosition,
+                    random: _random,
+                  ),
+                );
+              },
+            ),
           ),
         );
       },
@@ -113,17 +133,14 @@ class ParticlePainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final paintParticle = Paint()
-      ..color = Colors.white.withValues(alpha: 0.25)
-      ..style = PaintingStyle.fill;
-
+    // Faint overlay ambient glows
     final glowPaint1 = Paint()
-      ..color = AppTheme.cyanAccent.withValues(alpha: 0.08)
+      ..color = AppTheme.cyanAccent.withValues(alpha: 0.05)
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 120);
     canvas.drawCircle(Offset(size.width * 0.2, size.height * 0.3), 200, glowPaint1);
 
     final glowPaint2 = Paint()
-      ..color = AppTheme.purpleAccent.withValues(alpha: 0.08)
+      ..color = AppTheme.purpleAccent.withValues(alpha: 0.05)
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 150);
     canvas.drawCircle(Offset(size.width * 0.8, size.height * 0.7), 250, glowPaint2);
 
@@ -135,18 +152,30 @@ class ParticlePainter extends CustomPainter {
       if (particle.position.dy < 0) particle.position = Offset(particle.position.dx, size.height);
       if (particle.position.dy > size.height) particle.position = Offset(particle.position.dx, 0);
 
-      canvas.drawCircle(particle.position, particle.radius, paintParticle);
+      // Draw blurred glow ring behind particle
+      final glowPaint = Paint()
+        ..color = particle.color.withValues(alpha: 0.15)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4.0);
+      canvas.drawCircle(particle.position, particle.radius * 2.5, glowPaint);
+
+      // Draw solid inner particle
+      final solidPaint = Paint()
+        ..color = particle.color.withValues(alpha: 0.8)
+        ..style = PaintingStyle.fill;
+      canvas.drawCircle(particle.position, particle.radius, solidPaint);
 
       if (mousePosition != null) {
         final dist = (particle.position - mousePosition!).distance;
         if (dist < 180) {
-          final opacity = (1.0 - (dist / 180)).clamp(0.0, 1.0) * 0.4;
+          final opacity = (1.0 - (dist / 180)).clamp(0.0, 1.0) * 0.75;
           final linePaint = Paint()
-            ..shader = AppTheme.primaryGradient.createShader(
-              Rect.fromPoints(particle.position, mousePosition!),
-            )
-            ..strokeWidth = 1.0
-            ..color = Colors.white.withValues(alpha: opacity);
+            ..shader = LinearGradient(
+              colors: [
+                AppTheme.cyanAccent.withValues(alpha: opacity),
+                AppTheme.purpleAccent.withValues(alpha: opacity),
+              ],
+            ).createShader(Rect.fromPoints(particle.position, mousePosition!))
+            ..strokeWidth = 1.6;
           canvas.drawLine(particle.position, mousePosition!, linePaint);
         }
       }
