@@ -30,8 +30,13 @@ const CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutes
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 // Serve compiled Flutter Web frontend if built
+const publicDir = path.join(__dirname, 'public');
 const flutterWebDir = path.join(__dirname, '../like_gemini/build/web');
-if (fs.existsSync(flutterWebDir)) {
+
+if (fs.existsSync(publicDir)) {
+  app.use(express.static(publicDir));
+  console.log(`📁 Serving Flutter Web frontend from ${publicDir}`);
+} else if (fs.existsSync(flutterWebDir)) {
   app.use(express.static(flutterWebDir));
   console.log(`📁 Serving Flutter Web frontend from ${flutterWebDir}`);
 }
