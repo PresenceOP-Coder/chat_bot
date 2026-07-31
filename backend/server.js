@@ -133,6 +133,11 @@ app.post('/api/chat', async (req, res) => {
 function generateLocalFallback(prompt) {
   const q = prompt.trim().toLowerCase();
 
+  // Jokes & Humor
+  if (q.includes('joke') || q.includes('funny') || q.includes('humor') || q.includes('laugh')) {
+    return `### Developer & Editorial Jokes ✦\n\n1. **Why do programmers prefer dark mode?**\n   *Because light attracts bugs!*\n\n2. **There are 10 types of people in the world:**\n   *Those who understand binary, and those who don't.*\n\n3. **Why did the Flutter developer stay calm?**\n   *Because everything was in a good state!*`;
+  }
+
   // Who are you / Identity
   if (q.includes('who are you') || q.includes('your name') || q.includes('what are you')) {
     return `### I am Gemini Canvas ✦\n\nI am an **editorial AI workspace assistant** built for interactive research, software engineering, and creative writing.\n\n* **Design System:** PaperMind Editorial Theme\n* **Capabilities:** Code analysis, Flutter architecture, research synthesis, and creative drafting\n* **Backend:** Node.js Express Proxy Server (\`http://localhost:3000\`)`;
@@ -143,8 +148,8 @@ function generateLocalFallback(prompt) {
     return `### Welcome to Gemini Canvas! ✦\n\nHello! I am your AI workspace assistant. How can I help you today?\n\n* **Engineering:** Flutter widgets, Dart streams, debugging\n* **Writing:** Summarizing research, drafting articles, editing tone\n* **Design:** UI/UX controls and layout density`;
   }
 
-  // Compliments / Acknowledgments
-  if (q.includes('nice') || q.includes('good') || q.includes('great') || q.includes('awesome') || q.includes('cool') || q.includes('thanks') || q.includes('thank you')) {
+  // Compliments / Acknowledgments (exact phrases or thank you)
+  if (q === 'nice' || q === 'cool' || q === 'awesome' || q === 'great' || q.includes('thank')) {
     return `### Thank you! ✦\n\nI'm glad you like it! Feel free to ask me any technical questions, request Flutter code snippets, or test out editorial writing features.`;
   }
 
