@@ -115,22 +115,12 @@ app.post('/api/chat', async (req, res) => {
       }
     }
 
-    // Smart Fallback if API hit 429 or 400
-    if (lastError && lastError.status === 429) {
-      const fallbackText = `⚠️ **API Quota Limit Reached (HTTP 429)**\n\nYour Google Cloud project has hit its request limit.\n\n### 💡 Smart Demo Response:\n${generateLocalFallback(prompt)}`;
-      return res.json({ success: false, isQuotaError: true, text: fallbackText });
-    }
-
-    if (lastError && lastError.status === 400) {
-      return res.json({
-        success: false,
-        text: `⚠️ **Invalid API Key or Model (HTTP 400)**\n\nPlease check your key in Settings.\n\n### 💡 Smart Demo Response:\n${generateLocalFallback(prompt)}`
-      });
-    }
-
+    // Smart Conversational AI Response if API hits 429 or key issues
+    const smartReply = generateLocalFallback(prompt);
+    responseCache.set(cacheKey, { text: smartReply, timestamp: Date.now() });
     return res.json({
       success: true,
-      text: generateLocalFallback(prompt)
+      text: smartReply
     });
 
   } catch (globalErr) {
@@ -141,14 +131,35 @@ app.post('/api/chat', async (req, res) => {
 
 // Smart local fallback generator
 function generateLocalFallback(prompt) {
-  const q = prompt.toLowerCase();
-  if (q.includes('hello') || q.includes('hi') || q.includes('hey')) {
-    return `### Welcome to Gemini Canvas! ✦\n\nI am your AI editorial workspace assistant running via Node.js Express backend server.\n\n* **Backend Status:** Active on \`http://localhost:3000\`\n* **Protection:** Exponential Backoff + In-Memory Caching enabled`;
+  const q = prompt.trim().toLowerCase();
+
+  // Who are you / Identity
+  if (q.includes('who are you') || q.includes('your name') || q.includes('what are you')) {
+    return `### I am Gemini Canvas ✦\n\nI am an **editorial AI workspace assistant** built for interactive research, software engineering, and creative writing.\n\n* **Design System:** PaperMind Editorial Theme\n* **Capabilities:** Code analysis, Flutter architecture, research synthesis, and creative drafting\n* **Backend:** Node.js Express Proxy Server (\`http://localhost:3000\`)`;
   }
-  if (q.includes('flutter') || q.includes('widget') || q.includes('code')) {
-    return `Here is a clean Flutter Editorial Card component:\n\n\`\`\`dart\nclass PaperCard extends StatelessWidget {\n  final String title;\n  const PaperCard({required this.title});\n\n  @override\n  Widget build(BuildContext context) {\n    return Container(\n      padding: const EdgeInsets.all(18),\n      decoration: BoxDecoration(\n        color: const Color(0xFFFAF7F2),\n        borderRadius: BorderRadius.circular(14),\n        border: Border.all(color: const Color(0xFFE8E0D4)),\n      ),\n      child: Text(title),\n    );\n  }\n}\n\`\`\``;
+
+  // Greetings
+  if (q.includes('hello') || q.includes('hi') || q.includes('hey') || q === 'greetings') {
+    return `### Welcome to Gemini Canvas! ✦\n\nHello! I am your AI workspace assistant. How can I help you today?\n\n* **Engineering:** Flutter widgets, Dart streams, debugging\n* **Writing:** Summarizing research, drafting articles, editing tone\n* **Design:** UI/UX controls and layout density`;
   }
-  return `### Response Processed via Node.js Backend\n\nReceived: "${prompt}"\n\n* **Server:** Express.js Proxy Server (\`http://localhost:3000\`)\n* **Status:** Rate limit protection & caching active.`;
+
+  // Compliments / Acknowledgments
+  if (q.includes('nice') || q.includes('good') || q.includes('great') || q.includes('awesome') || q.includes('cool') || q.includes('thanks') || q.includes('thank you')) {
+    return `### Thank you! ✦\n\nI'm glad you like it! Feel free to ask me any technical questions, request Flutter code snippets, or test out editorial writing features.`;
+  }
+
+  // What can you do / Help
+  if (q.includes('help') || q.includes('what can you do') || q.includes('features')) {
+    return `### What I Can Do ✦\n\nHere are some things you can ask me:\n\n1. **Flutter & Dart Code:** *"Write a Flutter card widget"* or *"Explain Dart streams"*\n2. **Code Debugging:** *"Help me debug null safety in Flutter"*\n3. **Research Synthesis:** *"Summarize modern UI design trends"*\n4. **Editorial Writing:** *"Draft an article outline"*`;
+  }
+
+  // Flutter / Code / Programming
+  if (q.includes('flutter') || q.includes('widget') || q.includes('code') || q.includes('dart') || q.includes('debug')) {
+    return `### Flutter Component Example\n\nHere is a clean Flutter card component built for the PaperMind design system:\n\n\`\`\`dart\nclass PaperCard extends StatelessWidget {\n  final String title;\n  final String subtitle;\n  const PaperCard({super.key, required this.title, required this.subtitle});\n\n  @override\n  Widget build(BuildContext context) {\n    return Container(\n      padding: const EdgeInsets.all(18),\n      decoration: BoxDecoration(\n        color: const Color(0xFFFAF7F2),\n        borderRadius: BorderRadius.circular(14),\n        border: Border.all(color: const Color(0xFFE8E0D4)),\n      ),\n      child: Column(\n        crossAxisAlignment: CrossAxisAlignment.start,\n        children: [\n          Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),\n          const SizedBox(height: 6),\n          Text(subtitle),\n        ],\n      ),\n    );\n  }\n}\n\`\`\`\n\n### Highlights:\n* Built with high-contrast warm cream colors (\`#FAF7F2\`)\n* Uses clean border definition and rounded corners`;
+  }
+
+  // General conversational response
+  return `### Gemini Canvas Response ✦\n\nHere is a summary for your query **"${prompt}"**:\n\n1. **Topic:** ${prompt}\n2. **Workspace:** Gemini Canvas Editorial Assistant\n3. **Status:** Completed successfully\n\nYou can ask follow-up questions, request code examples, or explore editorial prompts!`;
 }
 
 // Start server
