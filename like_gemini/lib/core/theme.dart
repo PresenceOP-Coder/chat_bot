@@ -33,6 +33,11 @@ class AppTheme {
   static const Color userBubbleDk  = Color(0xFF2A2A2A); // user bubble dark
   static const Color botBubbleDk   = Color(0xFF1E1B17); // bot bubble dark amber tint
 
+  // Backward compatibility aliases
+  static const Color backgroundColor = bgDark;
+  static const Color cardColor = surfaceDark;
+  static const Color primaryColor = amberAccent;
+
   // ── Shared ─────────────────────────────────────────────────
   static const Color cyanAccent    = Color(0xFF00F2FE); // kept for network bg
   static const Color purpleAccent  = Color(0xFF9B51E0); // kept for network bg
